@@ -63,7 +63,7 @@ export default defineNuxtConfig({
     redirectToCanonicalSiteUrl: true,
   },
   nitro: {
-    preset: "node-server",
+    preset: "vercel-edge",
     compressPublicAssets: true,
     minify: true,
     routeRules: {
