@@ -12,6 +12,7 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
+    "start": "node .output/server/index.mjs",
     "types": "nuxt typecheck",
     "lint": "TIMING=1 DEBUG=eslint:eslint eslint --cache .",
     "check": "pnpm run lint && pnpm run types",
