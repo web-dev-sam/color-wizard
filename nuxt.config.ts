@@ -7,9 +7,9 @@ export default defineNuxtConfig({
   compatibilityDate: "2024-11-01",
   devtools: { enabled: false },
   site: {
-    url: "https://saas.webry.com/",
-    name: "Nuxt SaaS Template",
-    description: "A Nuxt.js template for building SaaS applications.",
+    url: "https://colors.webry.com/",
+    name: "Color Wizard",
+    description: "Generate and manipulate colors easily like its magic.",
     themeColor: "#21C45D",
     lang: "en",
   },
@@ -21,20 +21,8 @@ export default defineNuxtConfig({
     "@nuxt/image",
     "@nuxt/icon",
     "nuxt-security",
-    "nuxt-auth-utils",
   ],
   runtimeConfig: {
-    sessionPassword: "",
-    authOrigin: "",
-
-    oauthGoogleClientId: "",
-    oauthGoogleClientPassword: "",
-    oauthGithubClientId: "",
-    oauthGithubClientPassword: "",
-    oauthGithubConnectClientId: "",
-    oauthGithubConnectClientPassword: "",
-
-    postgresUrl: "",
     public: {
       contactEmail: "sam@webry.com",
     },
