@@ -5,7 +5,7 @@ import { security } from "./config/security.config"
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2024-11-01",
-  devtools: { enabled: false },
+  devtools: { enabled: true },
   site: {
     url: "https://colors.webry.com/",
     name: "Color Wizard",
@@ -48,7 +48,7 @@ export default defineNuxtConfig({
     typeCheck: "build",
     tsConfig: {
       exclude: ["../service-worker"],
-      include: ["./node_modules/@antfu/eslint-config/dist/index.d.ts"],
+      include: ["./node_modules/@antfu/eslint-config/dist/index.d.ts", "./node_modules/@types/culori/index.d.ts"],
       vueCompilerOptions: {
         target: 3.5,
       },

@@ -61,5 +61,9 @@
     "nuxt.config.*": "tailwind.config.*, tsconfig.*, eslint*, .prettier*, .gitignore, biome*, components.json, .env*, drizzle.*",
     "package.json": "bun.lockb, package-lock.json, README*, pnpm-lock.yaml, yarn.lock"
   },
-  "editor.gotoLocation.multipleDefinitions": "goto"
+  "editor.gotoLocation.multipleDefinitions": "goto",
+
+  // https://github.com/vuejs/language-tools/issues/5044
+  "vue.server.hybridMode": true,
+  "javascript.inlayHints.parameterNames.enabled": "literals"
 }

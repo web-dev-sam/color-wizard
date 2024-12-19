@@ -18,6 +18,7 @@ export default antfu({
   },
   lessOpinionated: true,
   rules: {
+    "no-console": "warn",
     "style/brace-style": "off",
     "vue/singleline-html-element-content-newline": "off",
     "vue/html-self-closing": "off",
