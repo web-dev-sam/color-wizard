@@ -1,61 +1,85 @@
 <script setup lang="ts">
-import { converter, formatHex, formatHsl, type Hsl, wcagContrast } from "culori"
+import { differenceEuclidean, formatHex, formatHsl, hsl, type Hsl, wcagContrast } from "culori"
 
-const toXyb = converter("xyb")
 const colorInput = ref("#0d1117")// "#0d1117")
 const colorIsValid = computed(() => formatHsl(colorInput.value) !== undefined)
 const selectedColor = ref<Hsl | undefined>(undefined)
 const hoveredColor = ref<Hsl | undefined>(undefined)
+const minContrast = ref(4.5)
+const maxContrast = ref(4.8)
+const contrastMode = ref<"auto" | "light" | "dark">("auto")
+
 const themeColor = computed(() => selectedColor.value ?? toHsl(colorInput.value))
 const themeColorContrast = computed(() => themeColor.value ? wcagContrast(themeColor.value, lrgbWhite) : 21)
 const themeBgFgCss = computed(() => ({
   backgroundColor: formatHsl(themeColor.value),
-  color: themeColorContrast.value < 4.5 ? "#111" : "#fff",
+  color: contrastMode.value === "auto"
+    ? themeColorContrast.value < 4.5
+      ? "#000"
+      : "#fff"
+    : contrastMode.value === "light"
+      ? "#fff"
+      : "#000",
 }))
 
 const contrastColors = computed(
-  () => def(findHSLColorsWithContrast(colorInput.value, 12, 4.5, 0.1, 0.7),
+  () => def(findHSLColorsWithContrast(colorInput.value, 24, minContrast.value, maxContrast.value, 0.7, contrastMode.value),
     {
-      ColorParserError: [] as Hsl[],
+      ColorParserError: undefined,
     },
   ),
 )
-const passingContrastColors = computed(() => contrastColors.value.data.filter(c => wcagContrast(c, lrgbWhite) >= 4.5))
-const failingContrastColors = computed(() => contrastColors.value.data.filter(c => wcagContrast(c, lrgbWhite) < 4.5))
-const passingSuggestionMap = computed(() => createColorMap(passingContrastColors.value))
-const failingSuggestionMap = computed(() => createColorMap(failingContrastColors.value))
+const suggestionMap = computed(() => contrastColors.value.data ? createColorMap(contrastColors.value.data) : undefined)
+const backgroundColor = hsl({ h: 0.2, s: 0.14, l: 0.04, mode: "hsl" })
 
-function createColorMap(colors: Hsl[]): Hsl[][] {
-  // console.time("createColorMap")
-  const sortedColors = [...colors].sort((a, b) => (a.h ?? 0) - (b.h ?? 0))
-  const colorMap: Hsl[][] = []
-  let currentHue = 0
-  let currentRow: Hsl[] = []
+function createColorMap(colors: Hsl[]) {
+  type WCAGContrastKey = string & { __wcagContrastKey: never }
+  const hueSort = (a: Hsl, b: Hsl) => (a.h ?? 0) - (b.h ?? 0)
+  const groupWcag = (colors: Hsl[]) => groupBy<WCAGContrastKey, Hsl>(colors, c => wcagContrast(c, {
+    auto: "#fff",
+    light: "#fff",
+    dark: "#000",
+  }[contrastMode.value]).toFixed(2) as WCAGContrastKey)
 
-  sortedColors.forEach((color) => {
-    if (Math.abs((color.h || 0) - currentHue) > 1) {
-      if (currentRow.length > 0) {
-        colorMap.push(currentRow.sort((a, b) => toXyb(b).b - toXyb(a).b))
-      }
-      currentRow = [color]
-      currentHue = color.h || 0
-    } else {
-      currentRow.push(color)
+  const wcagGroupedColors = groupWcag(colors)
+  for (let i = minContrast.value; i <= maxContrast.value; i += 0.01) {
+    if (!wcagGroupedColors[i.toFixed(2) as WCAGContrastKey]) {
+      wcagGroupedColors[i.toFixed(2) as WCAGContrastKey] = [backgroundColor]
     }
-  })
-
-  // Add the last row if it's not empty
-  if (currentRow.length > 0) {
-    colorMap.push(currentRow.sort((a, b) => toXyb(b).b - toXyb(a).b))
   }
 
-  // console.timeEnd("createColorMap")
-  return colorMap
+  const getDifference = (c: Hsl) => differenceEuclidean()(c, colorInput.value)
+  let autoSelectedColor: Hsl | undefined
+  let autoSelectedColorDifference = Infinity
+  for (const [_contrast, contrastColors] of Object.entries(wcagGroupedColors)) {
+    contrastColors.sort(hueSort)
+    for (const color of contrastColors) {
+      const difference = getDifference(color)
+      if (difference < autoSelectedColorDifference && color !== backgroundColor) {
+        autoSelectedColor = color
+        autoSelectedColorDifference = difference
+      }
+    }
+  }
+  if (autoSelectedColor) {
+    selectColor(autoSelectedColor)
+  }
+
+  return {
+    contrasts: Object
+      .keys(wcagGroupedColors)
+      .sort((a, b) => Number.parseFloat(b) - Number.parseFloat(a)) as (keyof typeof wcagGroupedColors)[],
+    colors: wcagGroupedColors,
+    autoSelectedColor,
+  }
 }
 
-function selectColor(c: Hsl | undefined) {
-  // console.log(c)
-  selectedColor.value = c
+function resetColor() {
+  selectedColor.value = suggestionMap.value?.autoSelectedColor ? suggestionMap.value?.autoSelectedColor : undefined
+}
+
+function selectColor(color: Hsl | undefined) {
+  selectedColor.value = color
 }
 </script>
 
@@ -69,58 +93,85 @@ function selectColor(c: Hsl | undefined) {
     </p>
 
     <div class="flex justify-center items-center gap-2">
-      <UiInput v-model="colorInput" class="inline-block" type="text" placeholder="1" :style="{ '--ring': formatHsl(colorInput) }" />
+      <UiButton
+        variant="ghost"
+        @click="resetColor"
+      >
+        <Icon name="ph:repeat" size="18"></Icon>
+      </UiButton>
+      <UiInput v-model="colorInput" class="inline-block" type="text" placeholder="#B000BA" :style="{ '--ring': colorIsValid ? formatHsl(colorInput) : 'red', 'border-red-500': !colorIsValid }" />
       <UiButton
         v-if="colorIsValid"
         :style="{ ...themeBgFgCss }"
       >
-        Select
+        Select <span class="ml-2 font-mono">{{ formatHex(themeColor) }}</span>
       </UiButton>
-      <span class="px-2 text-gray-600 dark:text-gray-400">
-        {{ formatHex(themeColor) }}
-      </span>
     </div>
-    <div class="flex justify-center gap-2 mt-4 text-gray-600 dark:text-gray-400">
-      <UiBadge variant="outline" class="text-sm" :style="{ borderColor: themeBgFgCss.backgroundColor }">
-        WCAG Contrast: {{ themeColorContrast.toFixed(2) }} ({{ themeColorContrast < 7 ? themeColorContrast < 4.5 ? 'Fail' : 'AA' : 'AAA' }})
-      </UiBadge>
-    </div>
+    <UiButton
+      v-if="colorIsValid"
+      variant="ghost"
+      class="mt-2 group"
+    >
+      Use <span class="mx-2 font-mono">{{ formatHex(colorInput) }}</span> <span class="saturate-0 scale-105 group-hover:saturate-50 group-hover:hue-rotate-30">🥴</span>
+    </UiButton>
 
     <!-- Color Display -->
-    <div class="flex justify-evenly">
-      <div class="mt-24">
-        <div>
-          Failing
-        </div>
-        <div v-if="colorIsValid && contrastColors.success" class="flex gap-[0px] justify-center">
-          <div v-for="(xcs, i) of failingSuggestionMap" :key="i" class="flex flex-col gap-[0px]">
-            <div v-for="(color, j) of xcs" :key="j">
-              <div
-                class="w-2 h-2 relative group" :style="{ backgroundColor: formatHsl(color) }"
-                @mouseover="hoveredColor = color"
-                @mouseleave="hoveredColor = undefined"
-                @click="() => selectColor(color)"
-              >
-                <div
-                  :class="cn(
-                    'w-4 h-4 absolute hidden -translate-x-1/2 -translate-y-1/2 top-1 left-1 border border-white group-hover:block pointer-events-none z-10',
-                    { 'block border-2': formatHsl(selectedColor) === formatHsl(color) },
-                  )"
-                  :style="{ backgroundColor: formatHsl(color) }"
-                >
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div class="mt-16 flex justify-evenly">
+      <div v-if="!colorIsValid" class="text-gray-600 dark:text-gray-400 w-[50ch] leading-8">
+        <div class="mb-2">Examples</div>
+        <code>#b000ba</code>,
+        <code>#bbc</code>,
+        <code>firebrick</code>,
+        <code>hsl(0, 100%, 50%)</code>,
+        <code>rgb(255 0 0)</code>,
+        <code>rgba(255, 0, 0, 0.5)</code>,
+        <code>hwb(0 0 0)</code>,
+        <code>lab(30% 40 20)</code>,
+        <code>lch(50% 10 250)</code>
       </div>
-      <div class="mt-24">
-        <div>
-          Passing WCAG AA(A)
+      <div v-else class="flex gap-4 pt-2 pb-4 pr-2">
+        <div class="flex w-10 pb-2 flex-col items-center text-gray-600 dark:text-gray-400">
+          <div class="tracking-tight text-sm pointer-events-none">
+            WCAG
+          </div>
+          <div class="flex-1"></div>
+          <UiButton
+            variant="ghost"
+            class="px-2"
+            :style="{ color: contrastMode === 'auto' ? formatHsl(themeColor) : '' }"
+            @click="contrastMode = 'auto'"
+          >
+            <Icon name="ph:lightning-a" size="18"></Icon>
+          </UiButton>
+          <UiButton
+            variant="ghost"
+            class="px-2"
+            :style="{ color: contrastMode === 'light' ? formatHsl(themeColor) : '' }"
+            @click="contrastMode = 'light'"
+          >
+            <Icon name="ph:sun" size="18"></Icon>
+          </UiButton>
+          <UiButton
+            variant="ghost"
+            class="px-2"
+            :style="{ color: contrastMode === 'dark' ? formatHsl(themeColor) : '' }"
+            @click="contrastMode = 'dark'"
+          >
+            <Icon name="ph:moon" size="18"></Icon>
+          </UiButton>
+          <div class="flex-1"></div>
+          <UiButton
+            variant="ghost"
+            class="px-2"
+            @click="resetColor"
+          >
+            <Icon name="ph:info" size="18"></Icon>
+          </UiButton>
         </div>
-        <div v-if="colorIsValid && contrastColors.success" class="flex gap-[0px] justify-center">
-          <div v-for="(xcs, i) of passingSuggestionMap" :key="i" class="flex flex-col gap-[0px]">
-            <div v-for="(color, j) of xcs" :key="j">
+        <CommonRuler :min="minContrast" :max="maxContrast" class="pb-4" />
+        <div v-if="suggestionMap" class="max-w-[50vw] sm:max-w-[70vw] md:max-w-[60vw] overflow-y-hidden pb-2 pr-2 flex flex-col justify-center">
+          <div v-for="contrast of suggestionMap.contrasts" :key="contrast" class="flex">
+            <div v-for="(color, i) of suggestionMap.colors[contrast]" :key="i">
               <div
                 class="w-2 h-2 relative group" :style="{ backgroundColor: formatHsl(color) }"
                 @mouseover="hoveredColor = color"

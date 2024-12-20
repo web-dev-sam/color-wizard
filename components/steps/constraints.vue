@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { formatHsl, type Hsl } from "culori"
-
 definePageMeta({
   layout: "blank",
 })
@@ -67,37 +65,6 @@ const colorBInput = ref("#0f172a") // "#822ce1")
 // oklch-linear: ['0.00', '0.13', '0.20', '0.08', '0.07', '0.09', '0.05', '0.04', '0.00']
 // hsl-linear: ['0.00', '0.11', '0.18', '0.12', '0.21', '0.22', '0.14', '0.09', '0.00']
 // watchEffect(() => console.log(differenceToTailwindColors.value))
-
-// console.log("map", findHSLColorsWithContrast("#475569", 12, 4.5, 0.01, 0.01))
-const contrastColors = findHSLColorsWithContrast("#3d619f", 12, 4.5, 0.01, 0.7) as Ok<Hsl[]>
-function createColorMap(colors: Hsl[]): Hsl[][] {
-  // Sort colors by lightness (y-axis) in descending order
-  const sortedColors = [...colors].sort((a, b) => b.l - a.l)
-
-  // Create a 2D array where each row represents a unique lightness value
-  const colorMap: Hsl[][] = []
-  let currentLightness = -1
-  let currentRow: Hsl[] = []
-
-  sortedColors.forEach((color) => {
-    if (color.l !== currentLightness) {
-      if (currentRow.length > 0) {
-        colorMap.push(currentRow.sort((a, b) => (a.h ?? 0) - (b.h ?? 0)))
-      }
-      currentRow = [color]
-      currentLightness = color.l
-    } else {
-      currentRow.push(color)
-    }
-  })
-
-  // Add the last row if it's not empty
-  if (currentRow.length > 0) {
-    colorMap.push(currentRow.sort((a, b) => (a.h ?? 0) - (b.h ?? 0)))
-  }
-
-  return colorMap
-}
 </script>
 
 <template>
@@ -125,15 +92,6 @@ function createColorMap(colors: Hsl[]): Hsl[][] {
         </div>
       </div>
     </div> -->
-
-    <!-- Color Display -->
-    <div v-if="contrastColors.success" class="container mx-auto mt-24 flex gap-[1px]">
-      <div v-for="(xcs, i) of createColorMap(contrastColors.data)" :key="i" class="flex flex-col gap-[1px]">
-        <div v-for="(color, j) of xcs" :key="j">
-          <div class="w-4 h-4" :style="{ backgroundColor: formatHsl(color) }"></div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 

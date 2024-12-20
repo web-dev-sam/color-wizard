@@ -177,12 +177,14 @@ const quickRgbToLrgb = ({ r, g, b, alpha }: Rgb) => {
 }
 
 export const lrgbWhite = quickRgbToLrgb({ r: 1, g: 1, b: 1, mode: "rgb" })
+export const lrgbBlack = quickRgbToLrgb({ r: 0 / 255, g: 0 / 255, b: 0 / 255, mode: "rgb" })
 export function findHSLColorsWithContrast(
   color: string,
   hueConstraint: number,
-  contrast: number,
-  contrastDelta: number,
+  lowerContrast: number,
+  upperContrast: number,
   saturationMin: number,
+  contrastMode: "auto" | "light" | "dark",
 ) {
   const colorHsl = toHsl(color)
   if (!colorHsl) {
@@ -200,9 +202,25 @@ export function findHSLColorsWithContrast(
       for (let l = 0; l <= 1; l += 0.01) {
         const colorHSL = { h, s, l, mode: "hsl" } as const
         const color = quickRgbToLrgb(toRGB(colorHSL))
-        const contrastValue = wcagContrast(color, lrgbWhite)
-        if (Math.abs(contrastValue - contrast) < contrastDelta) {
-          colors.push(colorHSL)
+        const lightContrastValue = wcagContrast(color, lrgbWhite)
+        const darkContrastValue = wcagContrast(color, lrgbBlack)
+
+        if (contrastMode === "light") {
+          if (lightContrastValue >= lowerContrast && lightContrastValue <= upperContrast) {
+            colors.push(colorHSL)
+            continue
+          }
+        } else if (contrastMode === "dark") {
+          if (darkContrastValue >= lowerContrast && darkContrastValue <= upperContrast) {
+            colors.push(colorHSL)
+            continue
+          }
+        } else {
+          if (lightContrastValue >= lowerContrast && lightContrastValue <= upperContrast
+            && darkContrastValue >= lowerContrast && darkContrastValue <= upperContrast) {
+            colors.push(colorHSL)
+            continue
+          }
         }
       }
     }
