@@ -4,6 +4,8 @@
 
 <template>
   <div>
-    <slot />
+    <UiTooltipProvider :delay-duration="300">
+      <slot />
+    </UiTooltipProvider>
   </div>
 </template>
