@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { differenceEuclidean, formatHex, formatHsl, hsl, type Hsl, wcagContrast } from "culori"
+import { differenceEuclidean, formatCss, formatHex, formatHsl, formatRgb, hsl, type Hsl, wcagContrast } from "culori"
 
-const contrastRangeMode = ref<"aa" | "aaa" | "aa18">("aa")
+const contrastRangeMode = ref<"aa" | "aaa" | "aa3+">("aa")
 const minContrast = computed(() => ({
-  aa18: 3,
-  aa: 4.5,
-  aaa: 7,
+  "aa3+": 3,
+  "aa": 4.5,
+  "aaa": 7,
 }[contrastRangeMode.value]))
 const maxContrast = computed(() => minContrast.value + 0.3)
-const inputColor = ref("#0d1117")
+const inputColor = ref("#6363e3")
 const inputColorValid = computed(() => formatHsl(inputColor.value) !== undefined)
 const selectedColor = ref<Hsl | undefined>(undefined)
 const hoveredColor = ref<Hsl | undefined>(undefined)
@@ -135,10 +135,10 @@ function selectColor(color: Hsl | undefined) {
             <UiButton
               variant="ghost"
               class="px-2"
-              :class="cn({ 'bg-neutral-800 text-white': contrastRangeMode === 'aa18' })"
-              @click="contrastRangeMode = 'aa18'"
+              :class="cn({ 'bg-neutral-800 text-white': contrastRangeMode === 'aa3+' })"
+              @click="contrastRangeMode = 'aa3+'"
             >
-              AA18
+              AA3+
             </UiButton>
             <div class="flex-1"></div>
             <UiButton
@@ -172,27 +172,91 @@ function selectColor(color: Hsl | undefined) {
             </div>
           </div>
         </div>
-        <div v-if="selectedColor" class="flex flex-col items-center gap-4 mt-10">
-          <div class="flex justify-center">
-            <UiButton
-              v-if="inputColorValid"
-              variant="ghost"
-              class="mt-2 group hidden"
-            >
-              Use <span class="mx-2 font-mono">{{ formatHex(inputColor) }}</span> <span class="saturate-0 scale-105 group-hover:saturate-50 group-hover:hue-rotate-30">🥴</span>
-            </UiButton>
+        <div v-if="selectedColor" class="mt-10 space-y-16">
+          <div class="flex gap-4 items-center justify-center">
             <UiButton
               v-if="inputColorValid"
               :style="{
                 backgroundColor: formatHsl(selectedColor),
                 color: '#fff',
               }"
-              class="mt-4"
             >
-              Select <span class="ml-2 font-mono">{{ formatHex(selectedColor) }}</span>
+              Continue with <span class="ml-2 font-mono">{{ formatHex(selectedColor) }}</span>
             </UiButton>
+            <CommonWcagStatus :color="selectedColor" :contrast-range="[minContrast, maxContrast]" />
           </div>
-          <CommonWcagStatus :color="selectedColor" :contrast-range="[minContrast, maxContrast]" />
+
+          <div>
+            <div class="flex gap-4 justify-center">
+              <div
+                class="flex items-center"
+              >
+                <code>{{ formatHex(selectedColor) }}</code>
+                <UiButton
+                  v-if="inputColorValid"
+                  variant="ghost"
+                  class="px-2"
+                  @click="copy(formatHex(selectedColor))"
+                >
+                  <Icon name="ph:copy" size="18"></Icon>
+                </UiButton>
+              </div>
+              <div
+                class="flex items-center"
+              >
+                <code>{{ formatHsl(selectedColor) }}</code>
+                <UiButton
+                  v-if="inputColorValid"
+                  variant="ghost"
+                  class="px-2"
+                  @click="copy(formatHsl(selectedColor))"
+                >
+                  <Icon name="ph:copy" size="18"></Icon>
+                </UiButton>
+              </div>
+              <div
+                class="flex items-center"
+              >
+                <code>{{ formatRgb(selectedColor) }}</code>
+                <UiButton
+                  v-if="inputColorValid"
+                  variant="ghost"
+                  class="px-2"
+                  @click="copy(formatRgb(selectedColor))"
+                >
+                  <Icon name="ph:copy" size="18"></Icon>
+                </UiButton>
+              </div>
+            </div>
+            <div class="flex gap-4 justify-center">
+              <div
+                class="flex items-center"
+              >
+                <code>{{ roundNumbersInString(formatCss(toOklab(selectedColor)), 4) }}</code>
+                <UiButton
+                  v-if="inputColorValid"
+                  variant="ghost"
+                  class="px-2"
+                  @click="copy(roundNumbersInString(formatCss(toOklab(selectedColor)), 4))"
+                >
+                  <Icon name="ph:copy" size="18"></Icon>
+                </UiButton>
+              </div>
+              <div
+                class="flex items-center"
+              >
+                <code>{{ roundNumbersInString(formatCss(toOklch(selectedColor)), 4) }}</code>
+                <UiButton
+                  v-if="inputColorValid"
+                  variant="ghost"
+                  class="px-2"
+                  @click="copy(roundNumbersInString(formatCss(toOklch(selectedColor)), 4))"
+                >
+                  <Icon name="ph:copy" size="18"></Icon>
+                </UiButton>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

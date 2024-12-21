@@ -11,3 +11,19 @@ export function groupBy<K extends PropertyKey, T>(
     return result
   }, {} as Record<K, T[]>)
 }
+
+export function copy(text: string) {
+  if (import.meta.client) {
+    navigator.clipboard.writeText(text)
+  }
+}
+
+export function roundNumbersInString(input: string, digits: number): string {
+  const numberRegex = /-?\d+(\.\d+)?/g
+
+  return input.replace(numberRegex, (match) => {
+    const num = Number.parseFloat(match)
+    const rounded = Math.round(num * 10 ** digits) / 10 ** digits
+    return rounded.toString()
+  })
+}
