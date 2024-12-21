@@ -1,10 +1,10 @@
 <script setup lang="ts">
 useSeoMeta({
   // Basic SEO
-  title: "SaaS Name",
-  description: "Your compelling description here - make it unique and descriptive",
+  title: "Generator",
+  description: "Easily generate accessible color shades that look consistent optimized for the human eye.",
   robots: "index, follow",
-  author: "Webry",
+  author: "Samuel Braun",
 
   // // Open Graph / Social Media
   // ogTitle: "SaaS Name",

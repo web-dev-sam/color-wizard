@@ -16,7 +16,7 @@ const isContrastValid = computed(() => isValid.value && contrast.value >= props.
     <div v-if="isContrastValid" class="flex text-green-400 gap-2 items-center" :class="{ 'text-yellow-400': contrastRange[0] < 4.5 }">
       <Icon name="ph:check" size="18" />
       <span>Pass{{ contrastRange[0] < 4.5 ? " for large text" : "" }} ({{ contrast.toFixed(2) }} : 1)</span>
-      <Icon v-if="contrastRange[0] < 4.5" name="ph:info" size="18" title="WCAG 2.0 recommends a contrast ratio of at least 3:1 for large text (14 point bold or 18 point regular) and 4.5:1 for normal text." />
+      <Icon v-if="contrastRange[0] < 4.5" name="ph:info" size="18" title="WCAG 2.1 recommends a contrast ratio of at least 3:1 for large text (14 point bold or 18 point regular) and 4.5:1 for normal text." />
     </div>
     <div v-else-if="!isValid" class="text-red-400 flex gap-2 items-center">
       <Icon name="ph:x" size="18" />
