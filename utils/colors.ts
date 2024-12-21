@@ -184,7 +184,6 @@ export function findHSLColorsWithContrast(
   lowerContrast: number,
   upperContrast: number,
   saturationMin: number,
-  contrastMode: "auto" | "light" | "dark",
 ) {
   const colorHsl = toHsl(color)
   if (!colorHsl) {
@@ -203,24 +202,10 @@ export function findHSLColorsWithContrast(
         const colorHSL = { h, s, l, mode: "hsl" } as const
         const color = quickRgbToLrgb(toRGB(colorHSL))
         const lightContrastValue = wcagContrast(color, lrgbWhite)
-        const darkContrastValue = wcagContrast(color, lrgbBlack)
 
-        if (contrastMode === "light") {
-          if (lightContrastValue >= lowerContrast && lightContrastValue <= upperContrast) {
-            colors.push(colorHSL)
-            continue
-          }
-        } else if (contrastMode === "dark") {
-          if (darkContrastValue >= lowerContrast && darkContrastValue <= upperContrast) {
-            colors.push(colorHSL)
-            continue
-          }
-        } else {
-          if (lightContrastValue >= lowerContrast && lightContrastValue <= upperContrast
-            && darkContrastValue >= lowerContrast && darkContrastValue <= upperContrast) {
-            colors.push(colorHSL)
-            continue
-          }
+        if (lightContrastValue >= lowerContrast && lightContrastValue <= upperContrast) {
+          colors.push(colorHSL)
+          continue
         }
       }
     }

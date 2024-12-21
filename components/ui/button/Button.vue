@@ -9,7 +9,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 // TODO: Fix variants for dark mode
 const buttonVariants = cva(
-  "inline-flex items-center font-500 px-4 py-2 border border-transparent text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-800 focus:ring-offset-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 dark:focus-visible:ring-gray-800 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center font-500 px-4 py-2 border border-transparent text-sm rounded-lg focus:outline-none focus:ring-0 transition-colors focus-visible:outline-none focus-visible:ring-[1px] focus-visible:ring-gray-300 dark:focus-visible:ring-gray-800 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {

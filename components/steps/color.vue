@@ -1,29 +1,20 @@
 <script setup lang="ts">
 import { differenceEuclidean, formatHex, formatHsl, hsl, type Hsl, wcagContrast } from "culori"
 
-const colorInput = ref("#0d1117")// "#0d1117")
-const colorIsValid = computed(() => formatHsl(colorInput.value) !== undefined)
+const contrastRangeMode = ref<"aa" | "aaa" | "aa18">("aa")
+const minContrast = computed(() => ({
+  aa18: 3,
+  aa: 4.5,
+  aaa: 7,
+}[contrastRangeMode.value]))
+const maxContrast = computed(() => minContrast.value + 0.3)
+const inputColor = ref("#0d1117")
+const inputColorValid = computed(() => formatHsl(inputColor.value) !== undefined)
 const selectedColor = ref<Hsl | undefined>(undefined)
 const hoveredColor = ref<Hsl | undefined>(undefined)
-const minContrast = ref(4.5)
-const maxContrast = ref(4.8)
-const contrastMode = ref<"auto" | "light" | "dark">("auto")
-
-const themeColor = computed(() => selectedColor.value ?? toHsl(colorInput.value))
-const themeColorContrast = computed(() => themeColor.value ? wcagContrast(themeColor.value, lrgbWhite) : 21)
-const themeBgFgCss = computed(() => ({
-  backgroundColor: formatHsl(themeColor.value),
-  color: contrastMode.value === "auto"
-    ? themeColorContrast.value < 4.5
-      ? "#000"
-      : "#fff"
-    : contrastMode.value === "light"
-      ? "#fff"
-      : "#000",
-}))
 
 const contrastColors = computed(
-  () => def(findHSLColorsWithContrast(colorInput.value, 24, minContrast.value, maxContrast.value, 0.7, contrastMode.value),
+  () => def(findHSLColorsWithContrast(inputColor.value, 24, minContrast.value, maxContrast.value, 0.7),
     {
       ColorParserError: undefined,
     },
@@ -35,11 +26,7 @@ const backgroundColor = hsl({ h: 0.2, s: 0.14, l: 0.04, mode: "hsl" })
 function createColorMap(colors: Hsl[]) {
   type WCAGContrastKey = string & { __wcagContrastKey: never }
   const hueSort = (a: Hsl, b: Hsl) => (a.h ?? 0) - (b.h ?? 0)
-  const groupWcag = (colors: Hsl[]) => groupBy<WCAGContrastKey, Hsl>(colors, c => wcagContrast(c, {
-    auto: "#fff",
-    light: "#fff",
-    dark: "#000",
-  }[contrastMode.value]).toFixed(2) as WCAGContrastKey)
+  const groupWcag = (colors: Hsl[]) => groupBy<WCAGContrastKey, Hsl>(colors, c => wcagContrast(c, lrgbWhite).toFixed(2) as WCAGContrastKey)
 
   const wcagGroupedColors = groupWcag(colors)
   for (let i = minContrast.value; i <= maxContrast.value; i += 0.01) {
@@ -48,7 +35,7 @@ function createColorMap(colors: Hsl[]) {
     }
   }
 
-  const getDifference = (c: Hsl) => differenceEuclidean()(c, colorInput.value)
+  const getDifference = (c: Hsl) => differenceEuclidean()(c, inputColor.value)
   let autoSelectedColor: Hsl | undefined
   let autoSelectedColorDifference = Infinity
   for (const [_contrast, contrastColors] of Object.entries(wcagGroupedColors)) {
@@ -88,36 +75,26 @@ function selectColor(color: Hsl | undefined) {
     <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
       Choose your base color.
     </h1>
-    <p class="text-lg text-gray-600 dark:text-gray-400 mb-10 leading-relaxed">
-      This is the base of your palette. It should have a good contrast ratio with the background.
+    <p class="text-lg text-gray-600 dark:text-gray-400 mb-24 leading-relaxed max-w-[60ch] mx-auto">
+      This is the base of your palette. For light themes, it will be color 600. For dark themes, you can use this as color 600 to get more light shades.
     </p>
 
     <div class="flex justify-center items-center gap-2">
       <UiButton
+        v-if="inputColorValid"
         variant="ghost"
+        class="px-2"
         @click="resetColor"
       >
         <Icon name="ph:repeat" size="18"></Icon>
       </UiButton>
-      <UiInput v-model="colorInput" class="inline-block" type="text" placeholder="#B000BA" :style="{ '--ring': colorIsValid ? formatHsl(colorInput) : 'red', 'border-red-500': !colorIsValid }" />
-      <UiButton
-        v-if="colorIsValid"
-        :style="{ ...themeBgFgCss }"
-      >
-        Select <span class="ml-2 font-mono">{{ formatHex(themeColor) }}</span>
-      </UiButton>
+      <UiInput v-model="inputColor" class="inline-block text-center" type="text" placeholder="#B000BA" :style="{ '--ring': inputColorValid ? formatHsl(inputColor) : 'red', 'border-red-500': !inputColorValid }" />
+      <CommonWcagStatus :color="inputColor" :contrast-range="[minContrast, maxContrast]" />
     </div>
-    <UiButton
-      v-if="colorIsValid"
-      variant="ghost"
-      class="mt-2 group"
-    >
-      Use <span class="mx-2 font-mono">{{ formatHex(colorInput) }}</span> <span class="saturate-0 scale-105 group-hover:saturate-50 group-hover:hue-rotate-30">🥴</span>
-    </UiButton>
 
     <!-- Color Display -->
-    <div class="mt-16 flex justify-evenly">
-      <div v-if="!colorIsValid" class="text-gray-600 dark:text-gray-400 w-[50ch] leading-8">
+    <div class="mt-4 flex justify-evenly">
+      <div v-if="!inputColorValid" class="text-gray-600 dark:text-gray-400 w-[50ch] leading-8">
         <div class="mb-2">Examples</div>
         <code>#b000ba</code>,
         <code>#bbc</code>,
@@ -129,66 +106,93 @@ function selectColor(color: Hsl | undefined) {
         <code>lab(30% 40 20)</code>,
         <code>lch(50% 10 250)</code>
       </div>
-      <div v-else class="flex gap-4 pt-2 pb-4 pr-2">
-        <div class="flex w-10 pb-2 flex-col items-center text-gray-600 dark:text-gray-400">
-          <div class="tracking-tight text-sm pointer-events-none">
-            WCAG
+      <div v-else>
+        <p class="mt-12 text-gray-600 dark:text-gray-400 mb-2">
+          Select a color below that passes WCAG contrast guidelines:
+        </p>
+        <div class="flex gap-4 pt-2 pb-4 pr-2">
+          <div class="flex gap-2 w-10 pb-2 flex-col items-center text-gray-600 dark:text-gray-400">
+            <div class="tracking-tight text-sm pointer-events-none">
+              WCAG
+            </div>
+            <div class="flex-1"></div>
+            <UiButton
+              variant="ghost"
+              class="px-2 py-0"
+              :class="cn({ 'bg-neutral-800 text-white': contrastRangeMode === 'aa' })"
+              @click="contrastRangeMode = 'aa'"
+            >
+              AA
+            </UiButton>
+            <UiButton
+              variant="ghost"
+              class="px-2"
+              :class="cn({ 'bg-neutral-800 text-white': contrastRangeMode === 'aaa' })"
+              @click="contrastRangeMode = 'aaa'"
+            >
+              AAA
+            </UiButton>
+            <UiButton
+              variant="ghost"
+              class="px-2"
+              :class="cn({ 'bg-neutral-800 text-white': contrastRangeMode === 'aa18' })"
+              @click="contrastRangeMode = 'aa18'"
+            >
+              AA18
+            </UiButton>
+            <div class="flex-1"></div>
+            <UiButton
+              variant="ghost"
+              class="px-2"
+              @click="resetColor"
+            >
+              <Icon name="ph:info" size="18"></Icon>
+            </UiButton>
           </div>
-          <div class="flex-1"></div>
-          <UiButton
-            variant="ghost"
-            class="px-2"
-            :style="{ color: contrastMode === 'auto' ? formatHsl(themeColor) : '' }"
-            @click="contrastMode = 'auto'"
-          >
-            <Icon name="ph:lightning-a" size="18"></Icon>
-          </UiButton>
-          <UiButton
-            variant="ghost"
-            class="px-2"
-            :style="{ color: contrastMode === 'light' ? formatHsl(themeColor) : '' }"
-            @click="contrastMode = 'light'"
-          >
-            <Icon name="ph:sun" size="18"></Icon>
-          </UiButton>
-          <UiButton
-            variant="ghost"
-            class="px-2"
-            :style="{ color: contrastMode === 'dark' ? formatHsl(themeColor) : '' }"
-            @click="contrastMode = 'dark'"
-          >
-            <Icon name="ph:moon" size="18"></Icon>
-          </UiButton>
-          <div class="flex-1"></div>
-          <UiButton
-            variant="ghost"
-            class="px-2"
-            @click="resetColor"
-          >
-            <Icon name="ph:info" size="18"></Icon>
-          </UiButton>
-        </div>
-        <CommonRuler :min="minContrast" :max="maxContrast" class="pb-4" />
-        <div v-if="suggestionMap" class="max-w-[50vw] sm:max-w-[70vw] md:max-w-[60vw] overflow-y-hidden pb-2 pr-2 flex flex-col justify-center">
-          <div v-for="contrast of suggestionMap.contrasts" :key="contrast" class="flex">
-            <div v-for="(color, i) of suggestionMap.colors[contrast]" :key="i">
-              <div
-                class="w-2 h-2 relative group" :style="{ backgroundColor: formatHsl(color) }"
-                @mouseover="hoveredColor = color"
-                @mouseleave="hoveredColor = undefined"
-                @click="() => selectColor(color)"
-              >
+          <CommonRuler :min="minContrast" :max="maxContrast" class="pb-4" />
+          <div v-if="suggestionMap" class="max-w-[50vw] sm:max-w-[70vw] md:max-w-[60vw] overflow-y-hidden pb-2 pr-2 flex flex-col justify-center">
+            <div v-for="contrast of suggestionMap.contrasts" :key="contrast" class="flex">
+              <div v-for="(color, i) of suggestionMap.colors[contrast]" :key="i">
                 <div
-                  :class="cn(
-                    'w-4 h-4 absolute hidden -translate-x-1/2 -translate-y-1/2 top-1 left-1 border border-white group-hover:block pointer-events-none z-10',
-                    { 'block border-2': formatHsl(selectedColor) === formatHsl(color) },
-                  )"
-                  :style="{ backgroundColor: formatHsl(color) }"
+                  class="w-2 h-2 relative group" :style="{ backgroundColor: formatHsl(color) }"
+                  @mouseover="hoveredColor = color"
+                  @mouseleave="hoveredColor = undefined"
+                  @click="() => selectColor(color)"
                 >
+                  <div
+                    :class="cn(
+                      'w-4 h-4 absolute hidden -translate-x-1/2 -translate-y-1/2 top-1 left-1 border border-white group-hover:block pointer-events-none z-10',
+                      { 'block border-2': formatHsl(selectedColor) === formatHsl(color) },
+                    )"
+                    :style="{ backgroundColor: formatHsl(color) }"
+                  >
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+        <div v-if="selectedColor" class="flex flex-col items-center gap-4 mt-10">
+          <div class="flex justify-center">
+            <UiButton
+              v-if="inputColorValid"
+              variant="ghost"
+              class="mt-2 group hidden"
+            >
+              Use <span class="mx-2 font-mono">{{ formatHex(inputColor) }}</span> <span class="saturate-0 scale-105 group-hover:saturate-50 group-hover:hue-rotate-30">🥴</span>
+            </UiButton>
+            <UiButton
+              v-if="inputColorValid"
+              :style="{
+                backgroundColor: formatHsl(selectedColor),
+                color: '#fff',
+              }"
+              class="mt-4"
+            >
+              Select <span class="ml-2 font-mono">{{ formatHex(selectedColor) }}</span>
+            </UiButton>
+          </div>
+          <CommonWcagStatus :color="selectedColor" :contrast-range="[minContrast, maxContrast]" />
         </div>
       </div>
     </div>
