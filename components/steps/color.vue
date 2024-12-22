@@ -149,13 +149,15 @@ function resetColor() {
             </UiButton>
           </div>
           <CommonRuler :min="minContrast" :max="maxContrast" class="pb-4" />
-          <div class="pb-2 pr-2 flex flex-col justify-center w-[50vw] sm:w-[70vw] md:w-[60vw] h-64">
-            <TresCanvas
-              clear-color="#111"
-              class="ctr-canvas"
-            >
-              <CommonAcceleratedColorMap />
-            </TresCanvas>
+          <div class="w-[50vw] sm:w-[70vw] md:w-[60vw] overflow-x-auto">
+            <div class="!w-[2000px]" :style="{ height: `${31 * 14 / getDevicePixelRatio()}px` }">
+              <TresCanvas
+                clear-color="#111"
+                class="ctr-canvas"
+              >
+                <CommonAcceleratedColorMap v-model="selectedColor" />
+              </TresCanvas>
+            </div>
           </div>
         </div>
         <div v-if="selectedColor" class="mt-10 space-y-16">

@@ -27,3 +27,7 @@ export function roundNumbersInString(input: string, digits: number): string {
     return rounded.toString()
   })
 }
+
+export function getDevicePixelRatio() {
+  return window.devicePixelRatio ?? 1
+}

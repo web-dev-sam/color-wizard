@@ -179,7 +179,7 @@ const quickRgbToLrgb = ({ r, g, b, alpha }: Rgb) => {
 export const lrgbWhite = quickRgbToLrgb({ r: 1, g: 1, b: 1, mode: "rgb" })
 export const lrgbBlack = quickRgbToLrgb({ r: 0 / 255, g: 0 / 255, b: 0 / 255, mode: "rgb" })
 export function findHSLColorsWithContrast(
-  color: string,
+  color: Rgb,
   hueConstraint: number,
   lowerContrast: number,
   upperContrast: number,
