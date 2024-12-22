@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { differenceEuclidean, formatCss, formatHex, formatHsl, formatRgb, hsl, type Hsl, wcagContrast } from "culori"
+import { formatCss, formatHex, formatHsl, formatRgb, type Hsl } from "culori"
 
 const contrastRangeMode = ref<"aa" | "aaa" | "aa3+">("aa")
 const minContrast = computed(() => ({
@@ -11,63 +11,62 @@ const maxContrast = computed(() => minContrast.value + 0.3)
 const inputColor = ref("#6363e3")
 const inputColorValid = computed(() => formatHsl(inputColor.value) !== undefined)
 const selectedColor = ref<Hsl | undefined>(undefined)
-const hoveredColor = ref<Hsl | undefined>(undefined)
 
-const contrastColors = computed(
-  () => def(findHSLColorsWithContrast(inputColor.value, 24, minContrast.value, maxContrast.value, 0.7),
-    {
-      ColorParserError: undefined,
-    },
-  ),
-)
-const suggestionMap = computed(() => contrastColors.value.data ? createColorMap(contrastColors.value.data) : undefined)
-const backgroundColor = hsl({ h: 0.2, s: 0.14, l: 0.04, mode: "hsl" })
+// const contrastColors = computed(
+//   () => def(findHSLColorsWithContrast(inputColor.value, 24, minContrast.value, maxContrast.value, 0.7),
+//     {
+//       ColorParserError: undefined,
+//     },
+//   ),
+// )
+// const suggestionMap = computed(() => contrastColors.value.data ? createColorMap(contrastColors.value.data) : undefined)
+// const backgroundColor = hsl({ h: 0.2, s: 0.14, l: 0.04, mode: "hsl" })
 
-function createColorMap(colors: Hsl[]) {
-  type WCAGContrastKey = string & { __wcagContrastKey: never }
-  const hueSort = (a: Hsl, b: Hsl) => (a.h ?? 0) - (b.h ?? 0)
-  const groupWcag = (colors: Hsl[]) => groupBy<WCAGContrastKey, Hsl>(colors, c => wcagContrast(c, lrgbWhite).toFixed(2) as WCAGContrastKey)
+// function _createColorMap(colors: Hsl[]) {
+//   type WCAGContrastKey = string & { __wcagContrastKey: never }
+//   const hueSort = (a: Hsl, b: Hsl) => (a.h ?? 0) - (b.h ?? 0)
+//   const groupWcag = (colors: Hsl[]) => groupBy<WCAGContrastKey, Hsl>(colors, c => wcagContrast(c, lrgbWhite).toFixed(2) as WCAGContrastKey)
 
-  const wcagGroupedColors = groupWcag(colors)
-  for (let i = minContrast.value; i <= maxContrast.value; i += 0.01) {
-    if (!wcagGroupedColors[i.toFixed(2) as WCAGContrastKey]) {
-      wcagGroupedColors[i.toFixed(2) as WCAGContrastKey] = [backgroundColor]
-    }
-  }
+//   const wcagGroupedColors = groupWcag(colors)
+//   for (let i = minContrast.value; i <= maxContrast.value; i += 0.01) {
+//     if (!wcagGroupedColors[i.toFixed(2) as WCAGContrastKey]) {
+//       wcagGroupedColors[i.toFixed(2) as WCAGContrastKey] = [backgroundColor]
+//     }
+//   }
 
-  const getDifference = (c: Hsl) => differenceEuclidean()(c, inputColor.value)
-  let autoSelectedColor: Hsl | undefined
-  let autoSelectedColorDifference = Infinity
-  for (const [_contrast, contrastColors] of Object.entries(wcagGroupedColors)) {
-    contrastColors.sort(hueSort)
-    for (const color of contrastColors) {
-      const difference = getDifference(color)
-      if (difference < autoSelectedColorDifference && color !== backgroundColor) {
-        autoSelectedColor = color
-        autoSelectedColorDifference = difference
-      }
-    }
-  }
-  if (autoSelectedColor) {
-    selectColor(autoSelectedColor)
-  }
+//   const getDifference = (c: Hsl) => differenceEuclidean()(c, inputColor.value)
+//   let autoSelectedColor: Hsl | undefined
+//   let autoSelectedColorDifference = Infinity
+//   for (const [_contrast, contrastColors] of Object.entries(wcagGroupedColors)) {
+//     contrastColors.sort(hueSort)
+//     for (const color of contrastColors) {
+//       const difference = getDifference(color)
+//       if (difference < autoSelectedColorDifference && color !== backgroundColor) {
+//         autoSelectedColor = color
+//         autoSelectedColorDifference = difference
+//       }
+//     }
+//   }
+//   if (autoSelectedColor) {
+//     selectColor(autoSelectedColor)
+//   }
 
-  return {
-    contrasts: Object
-      .keys(wcagGroupedColors)
-      .sort((a, b) => Number.parseFloat(b) - Number.parseFloat(a)) as (keyof typeof wcagGroupedColors)[],
-    colors: wcagGroupedColors,
-    autoSelectedColor,
-  }
-}
+//   return {
+//     contrasts: Object
+//       .keys(wcagGroupedColors)
+//       .sort((a, b) => Number.parseFloat(b) - Number.parseFloat(a)) as (keyof typeof wcagGroupedColors)[],
+//     colors: wcagGroupedColors,
+//     autoSelectedColor,
+//   }
+// }
 
 function resetColor() {
-  selectedColor.value = suggestionMap.value?.autoSelectedColor ? suggestionMap.value?.autoSelectedColor : undefined
+  // selectedColor.value = suggestionMap.value?.autoSelectedColor ? suggestionMap.value?.autoSelectedColor : undefined
 }
 
-function selectColor(color: Hsl | undefined) {
-  selectedColor.value = color
-}
+// function selectColor(color: Hsl | undefined) {
+//   selectedColor.value = color
+// }
 </script>
 
 <template>
@@ -150,26 +149,13 @@ function selectColor(color: Hsl | undefined) {
             </UiButton>
           </div>
           <CommonRuler :min="minContrast" :max="maxContrast" class="pb-4" />
-          <div v-if="suggestionMap" class="max-w-[50vw] sm:max-w-[70vw] md:max-w-[60vw] overflow-y-hidden pb-2 pr-2 flex flex-col justify-center">
-            <div v-for="contrast of suggestionMap.contrasts" :key="contrast" class="flex">
-              <div v-for="(color, i) of suggestionMap.colors[contrast]" :key="i">
-                <div
-                  class="w-2 h-2 relative group" :style="{ backgroundColor: formatHsl(color) }"
-                  @mouseover="hoveredColor = color"
-                  @mouseleave="hoveredColor = undefined"
-                  @click="() => selectColor(color)"
-                >
-                  <div
-                    :class="cn(
-                      'w-4 h-4 absolute hidden -translate-x-1/2 -translate-y-1/2 top-1 left-1 border border-white group-hover:block pointer-events-none z-10',
-                      { 'block border-2': formatHsl(selectedColor) === formatHsl(color) },
-                    )"
-                    :style="{ backgroundColor: formatHsl(color) }"
-                  >
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div class="pb-2 pr-2 flex flex-col justify-center w-[50vw] sm:w-[70vw] md:w-[60vw] h-64">
+            <TresCanvas
+              clear-color="#111"
+              class="ctr-canvas"
+            >
+              <CommonAcceleratedColorMap />
+            </TresCanvas>
           </div>
         </div>
         <div v-if="selectedColor" class="mt-10 space-y-16">

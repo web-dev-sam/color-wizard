@@ -21,6 +21,7 @@ export default defineNuxtConfig({
     "@nuxt/image",
     "@nuxt/icon",
     "nuxt-security",
+    "@tresjs/nuxt",
   ],
   runtimeConfig: {
     public: {
@@ -39,6 +40,9 @@ export default defineNuxtConfig({
       },
     },
   },
+  vite: {
+    assetsInclude: ["**/*.vert", "**/*.frag"],
+  },
   ogImage: {
     defaults: {
       component: "NuxtSeo",
@@ -48,7 +52,11 @@ export default defineNuxtConfig({
     typeCheck: "build",
     tsConfig: {
       exclude: ["../service-worker"],
-      include: ["./node_modules/@antfu/eslint-config/dist/index.d.ts", "./node_modules/@types/culori/index.d.ts"],
+      include: [
+        "./node_modules/@antfu/eslint-config/dist/index.d.ts",
+        "./node_modules/@types/culori/index.d.ts",
+        "./types/shaders.d.ts",
+      ],
       vueCompilerOptions: {
         target: 3.5,
       },

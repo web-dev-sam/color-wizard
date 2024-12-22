@@ -24,7 +24,7 @@ const _ = defineProps({
       <UiButton variant="ghost" size="lg" @click="$router.back()"> One step back </UiButton>
       <NuxtLink class="ml-2">
         <UiButton variant="neutral" size="lg">
-          <Icon name="heroicons:home" class="mr-2" />
+          <Icon name="ph:house" class="mr-2" />
           Go Home
         </UiButton>
       </NuxtLink>
