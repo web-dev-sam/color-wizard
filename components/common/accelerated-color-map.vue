@@ -50,7 +50,7 @@ const groupedColors = computed(() => {
       wcagGroupedColors[contrast].push(color)
     }
 
-    const similarity = differenceEuclidean("hsl")(color, props.inputColor)
+    const similarity = -differenceEuclidean("hsl")(color, props.inputColor)
     if (similarity > inputSimilarity) {
       inputSimilarity = similarity
       aSelectedColor = color
@@ -101,6 +101,17 @@ const colorPaletteTexture = computed(() => {
   return { texture, width, height }
 })
 
+watch(() => colorPaletteTexture.value, () => {
+  const texture = colorPaletteTexture.value
+  if (!texture) {
+    return
+  }
+  uniforms.value.u_colorPalette.value = texture.texture
+  uniforms.value.u_paletteSize.value = new THREE.Vector2(texture.width, texture.height)
+
+  resetColor()
+}, { immediate: true })
+
 function getHoveredGrid(event: MouseEvent) {
   const x = event.offsetX
   const y = event.offsetY
@@ -147,19 +158,39 @@ function updateSelectedColor(event: MouseEvent) {
   selectedColorVModel.value = color
 }
 
-watch(() => colorPaletteTexture.value, () => {
-  const texture = colorPaletteTexture.value
-  if (!texture) {
+function resetColor() {
+  if (!groupedColors.value) {
     return
   }
-  uniforms.value.u_colorPalette.value = texture.texture
-  uniforms.value.u_paletteSize.value = new THREE.Vector2(texture.width, texture.height)
-}, { immediate: true })
+
+  const { autoSuggestedColor, colorMap } = groupedColors.value
+  if (!autoSuggestedColor) {
+    return
+  }
+  selectedColorVModel.value = autoSuggestedColor
+
+  let xIndex = -1
+  const colorMapKeys = Object.keys(colorMap)
+  for (let lineIndex = 0; lineIndex < colorMapKeys.length; lineIndex++) {
+    const line = colorMap[colorMapKeys[lineIndex]]
+    xIndex = line.findIndex(color => color === autoSuggestedColor)
+    if (xIndex !== -1) {
+      uniforms.value.u_selectedColor.value.set(xIndex, lineIndex)
+      break
+    }
+  }
+
+  const scrollX = xIndex * uniforms.value.u_boxSize.value
+  const scrollableElement = document.querySelector(".ctr-scrollable")
+  if (!scrollableElement) {
+    return
+  }
+
+  scrollableElement.scrollTo({ left: scrollX - scrollableElement.clientWidth / 2, behavior: "smooth" })
+}
 
 defineExpose({
-  resetColor() {
-    selectedColorVModel.value = groupedColors.value?.autoSuggestedColor
-  },
+  resetColor,
 })
 </script>
 

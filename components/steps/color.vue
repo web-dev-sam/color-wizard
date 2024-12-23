@@ -40,14 +40,13 @@ function resetColor() {
       >
         <Icon name="ph:repeat" size="18"></Icon>
       </UiButton>
-      <UiInput v-model="inputColor" class="inline-block text-center" type="text" placeholder="#B000BA" :style="{ '--ring': inputColorValid ? formatHsl(inputColor) : 'red', 'border-red-500': !inputColorValid }" />
+      <UiInput v-model="inputColor" class="inline-block text-center" type="text" placeholder="#123456" :style="{ '--ring': inputColorValid ? formatHsl(inputColor) : 'red', 'border-red-500': !inputColorValid }" />
       <CommonWcagStatus :color="inputColor" :contrast-range="[minContrast, maxContrast]" />
     </div>
 
-    <!-- Color Display -->
-    <div class="mt-4 flex justify-evenly">
+    <div class="flex justify-evenly">
       <div v-if="!inputColorValid" class="text-gray-600 dark:text-gray-400 w-[50ch] leading-8">
-        <div class="mb-2">Examples</div>
+        <div class="mb-2 mt-24">Examples</div>
         <code class="hover:bg-neutral-800 cursor-pointer" role="button" @click="inputColor = '#123456'">#123456</code>,
         <code class="hover:bg-neutral-800 cursor-pointer" role="button" @click="inputColor = '#abc'">#abc</code>,
         <code class="hover:bg-neutral-800 cursor-pointer" role="button" @click="inputColor = 'firebrick'">firebrick</code>,
@@ -102,7 +101,7 @@ function resetColor() {
             </UiButton>
           </div>
           <CommonRuler :min="minContrast" :max="maxContrast" class="pb-6" />
-          <div class="w-[50vw] sm:w-[70vw] md:w-[60vw] overflow-x-auto pb-4">
+          <div class="ctr-scrollable w-[50vw] sm:w-[70vw] md:w-[60vw] overflow-x-auto pb-4">
             <div class="!w-[2000px]" :style="{ height: `${31 * 14 / getDevicePixelRatio()}px` }">
               <TresCanvas
                 clear-color="#111"
