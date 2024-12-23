@@ -57,7 +57,7 @@ const calculateColors = () => {
 }
 
 const createColorPaletteTexture = (groupedColors: Record<string, Hsl[]>) => {
-  const contrasts = Object.keys(groupedColors).sort((a, b) => Number(b) - Number(a))
+  const contrasts = Object.keys(groupedColors).sort((a, b) => Number(a) - Number(b))
   const maxColorsInRow = Math.max(...contrasts.map(c => groupedColors[c].length))
 
   const width = maxColorsInRow
@@ -92,7 +92,7 @@ const updateHoveredColor = (event: MouseEvent) => {
 
   // Convert to normalized device coordinates
   const ndcX = (x * getDevicePixelRatio() / (uniforms.value.u_paletteSize.value.x * uniforms.value.u_boxSize.value)) * 2 - 1
-  const ndcY = -(y / sizes.height.value) * 2 + 1
+  const ndcY = (y / sizes.height.value) * 2 - 1
 
   // Convert to grid coordinates
   const gridX = Math.floor((ndcX + 1) / 2 * uniforms.value.u_paletteSize.value.x)

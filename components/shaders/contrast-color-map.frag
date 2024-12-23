@@ -10,30 +10,19 @@ uniform float u_hoverScale;
 
 void main() {
     vec2 st = gl_FragCoord.xy / u_resolution;
-    
-    // Calculate the grid
     vec2 grid = floor(st * u_resolution / u_boxSize);
+    vec2 invertedGrid = vec2(grid.x, u_paletteSize.y - 1.0 - grid.y);
     
-    // Check if we're within the color palette bounds
     if (grid.x < u_paletteSize.x && grid.y < u_paletteSize.y) {
-        // Calculate texture coordinates
         vec2 texCoord = (grid + 0.5) / u_paletteSize;
-        
-        // Sample the color from the palette
         vec4 color = texture2D(u_colorPalette, texCoord);
         
-        // Check if this is the hovered color
-        if (grid == u_hoveredColor) {
-            // Calculate position within the box
+        if (invertedGrid == u_hoveredColor) {
             vec2 boxSt = fract(st * u_resolution / u_boxSize);
-            
-            // Scale and center the box
             vec2 scaledSt = (boxSt - 0.5) * u_hoverScale + 0.5;
             
-            // Check if we're inside the scaled box
             if (scaledSt.x >= 0.0 && scaledSt.x <= 1.0 && scaledSt.y >= 0.0 && scaledSt.y <= 1.0) {
-                // Add white border
-                float borderWidth = 0.1; // Increased for visibility
+                float borderWidth = 0.1;
                 if (scaledSt.x < borderWidth || scaledSt.x > 1.0 - borderWidth ||
                     scaledSt.y < borderWidth || scaledSt.y > 1.0 - borderWidth) {
                     gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0); // White border
@@ -41,12 +30,12 @@ void main() {
                     gl_FragColor = color;
                 }
             } else {
-                gl_FragColor = vec4(0.5, 0.5, 0.5, 0.5); // Semi-transparent gray for debugging
+                gl_FragColor = vec4(0.5, 0.5, 0.5, 0.5); // Gray for debugging
             }
         } else {
             gl_FragColor = color;
         }
     } else {
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0); // Transparent outside the color palette
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
     }
 }

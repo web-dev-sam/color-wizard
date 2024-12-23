@@ -149,7 +149,7 @@ function resetColor() {
             </UiButton>
           </div>
           <CommonRuler :min="minContrast" :max="maxContrast" class="pb-4" />
-          <div class="w-[50vw] sm:w-[70vw] md:w-[60vw] overflow-x-auto">
+          <div class="w-[50vw] sm:w-[70vw] md:w-[60vw] overflow-x-auto pb-4">
             <div class="!w-[2000px]" :style="{ height: `${31 * 14 / getDevicePixelRatio()}px` }">
               <TresCanvas
                 clear-color="#111"

@@ -29,5 +29,5 @@ export function roundNumbersInString(input: string, digits: number): string {
 }
 
 export function getDevicePixelRatio() {
-  return window.devicePixelRatio ?? 1
+  return window?.devicePixelRatio ?? 1
 }
