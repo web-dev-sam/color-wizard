@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { formatCss, formatHex, formatHsl, formatRgb, type Hsl } from "culori"
 
+const accColorMapRef = useTemplateRef("accelerated-color-map")
 const contrastRangeMode = ref<"aa" | "aaa" | "aa3+">("aa")
 const minContrast = computed(() => ({
   "aa3+": 3,
@@ -12,56 +13,8 @@ const inputColor = ref("#6363e3")
 const inputColorValid = computed(() => formatHsl(inputColor.value) !== undefined)
 const selectedColor = ref<Hsl | undefined>(undefined)
 
-// const contrastColors = computed(
-//   () => def(findHSLColorsWithContrast(inputColor.value, 24, minContrast.value, maxContrast.value, 0.7),
-//     {
-//       ColorParserError: undefined,
-//     },
-//   ),
-// )
-// const suggestionMap = computed(() => contrastColors.value.data ? createColorMap(contrastColors.value.data) : undefined)
-// const backgroundColor = hsl({ h: 0.2, s: 0.14, l: 0.04, mode: "hsl" })
-
-// function _createColorMap(colors: Hsl[]) {
-//   type WCAGContrastKey = string & { __wcagContrastKey: never }
-//   const hueSort = (a: Hsl, b: Hsl) => (a.h ?? 0) - (b.h ?? 0)
-//   const groupWcag = (colors: Hsl[]) => groupBy<WCAGContrastKey, Hsl>(colors, c => wcagContrast(c, lrgbWhite).toFixed(2) as WCAGContrastKey)
-
-//   const wcagGroupedColors = groupWcag(colors)
-//   for (let i = minContrast.value; i <= maxContrast.value; i += 0.01) {
-//     if (!wcagGroupedColors[i.toFixed(2) as WCAGContrastKey]) {
-//       wcagGroupedColors[i.toFixed(2) as WCAGContrastKey] = [backgroundColor]
-//     }
-//   }
-
-//   const getDifference = (c: Hsl) => differenceEuclidean()(c, inputColor.value)
-//   let autoSelectedColor: Hsl | undefined
-//   let autoSelectedColorDifference = Infinity
-//   for (const [_contrast, contrastColors] of Object.entries(wcagGroupedColors)) {
-//     contrastColors.sort(hueSort)
-//     for (const color of contrastColors) {
-//       const difference = getDifference(color)
-//       if (difference < autoSelectedColorDifference && color !== backgroundColor) {
-//         autoSelectedColor = color
-//         autoSelectedColorDifference = difference
-//       }
-//     }
-//   }
-//   if (autoSelectedColor) {
-//     selectColor(autoSelectedColor)
-//   }
-
-//   return {
-//     contrasts: Object
-//       .keys(wcagGroupedColors)
-//       .sort((a, b) => Number.parseFloat(b) - Number.parseFloat(a)) as (keyof typeof wcagGroupedColors)[],
-//     colors: wcagGroupedColors,
-//     autoSelectedColor,
-//   }
-// }
-
 function resetColor() {
-  // selectedColor.value = suggestionMap.value?.autoSelectedColor ? suggestionMap.value?.autoSelectedColor : undefined
+  accColorMapRef.value?.resetColor()
 }
 
 // function selectColor(color: Hsl | undefined) {
@@ -155,7 +108,13 @@ function resetColor() {
                 clear-color="#111"
                 class="ctr-canvas"
               >
-                <CommonAcceleratedColorMap v-model="selectedColor" />
+                <CommonAcceleratedColorMap
+                  ref="accelerated-color-map"
+                  v-model="selectedColor"
+                  :input-color="inputColor"
+                  :min-contrast="minContrast"
+                  :max-contrast="maxContrast"
+                />
               </TresCanvas>
             </div>
           </div>
@@ -174,12 +133,12 @@ function resetColor() {
             <CommonWcagStatus :color="selectedColor" :contrast-range="[minContrast, maxContrast]" />
           </div>
 
-          <div>
-            <div class="flex gap-4 justify-center">
+          <div class="space-y-4 pb-24">
+            <div class="flex flex-wrap gap-4 justify-center">
               <div
                 class="flex items-center"
               >
-                <code>{{ formatHex(selectedColor) }}</code>
+                <code class="whitespace-nowrap">{{ formatHex(selectedColor) }}</code>
                 <UiButton
                   v-if="inputColorValid"
                   variant="ghost"
@@ -192,7 +151,7 @@ function resetColor() {
               <div
                 class="flex items-center"
               >
-                <code>{{ formatHsl(selectedColor) }}</code>
+                <code class="whitespace-nowrap">{{ formatHsl(selectedColor) }}</code>
                 <UiButton
                   v-if="inputColorValid"
                   variant="ghost"
@@ -205,7 +164,7 @@ function resetColor() {
               <div
                 class="flex items-center"
               >
-                <code>{{ formatRgb(selectedColor) }}</code>
+                <code class="whitespace-nowrap">{{ formatRgb(selectedColor) }}</code>
                 <UiButton
                   v-if="inputColorValid"
                   variant="ghost"
@@ -216,11 +175,11 @@ function resetColor() {
                 </UiButton>
               </div>
             </div>
-            <div class="flex gap-4 justify-center">
+            <div class="flex flex-wrap gap-4 justify-center">
               <div
                 class="flex items-center"
               >
-                <code>{{ roundNumbersInString(formatCss(toOklab(selectedColor)), 4) }}</code>
+                <code class="whitespace-nowrap">{{ roundNumbersInString(formatCss(toOklab(selectedColor)), 4) }}</code>
                 <UiButton
                   v-if="inputColorValid"
                   variant="ghost"
@@ -233,7 +192,7 @@ function resetColor() {
               <div
                 class="flex items-center"
               >
-                <code>{{ roundNumbersInString(formatCss(toOklch(selectedColor)), 4) }}</code>
+                <code class="whitespace-nowrap">{{ roundNumbersInString(formatCss(toOklch(selectedColor)), 4) }}</code>
                 <UiButton
                   v-if="inputColorValid"
                   variant="ghost"
