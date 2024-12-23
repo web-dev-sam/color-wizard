@@ -20,7 +20,7 @@ const uniforms = ref({
   u_paletteSize: { value: new THREE.Vector2(1, 1) },
   u_boxSize: { value: 14 },
   u_hoveredColor: { value: new THREE.Vector2(-1, -1) },
-  u_hoverScale: { value: 1.2 },
+  u_selectedColor: { value: new THREE.Vector2(-1, -1) },
 })
 
 const calculateColors = () => {
@@ -86,7 +86,7 @@ const createColorPaletteTexture = (groupedColors: Record<string, Hsl[]>) => {
   return { texture, width, height }
 }
 
-const updateHoveredColor = (event: MouseEvent) => {
+const getHoveredGrid = function (event: MouseEvent) {
   const x = event.offsetX
   const y = event.offsetY
 
@@ -98,22 +98,34 @@ const updateHoveredColor = (event: MouseEvent) => {
   const gridX = Math.floor((ndcX + 1) / 2 * uniforms.value.u_paletteSize.value.x)
   const gridY = Math.floor((ndcY + 1) / 2 * uniforms.value.u_paletteSize.value.y)
 
-  // Update the hovered color uniform
   if (gridX >= 0 && gridX < uniforms.value.u_paletteSize.value.x
     && gridY >= 0 && gridY < uniforms.value.u_paletteSize.value.y) {
-    uniforms.value.u_hoveredColor.value.set(gridX, gridY)
-    if (!groupedColors.value) {
-      return
-    }
-    // Get the actual color from the grouped colors
-    const contrasts = Object.keys(groupedColors.value).sort((a, b) => Number(b) - Number(a))
-    const contrast = contrasts[gridY]
-    const color = groupedColors.value[contrast][gridX]
-
-    selectedColor.value = color
+    return { gridX, gridY }
   } else {
-    uniforms.value.u_hoveredColor.value.set(-1, -1)
+    return { gridX: -1, gridY: -1 }
   }
+}
+
+const updateHoveredColor = (event: MouseEvent) => {
+  const { gridX, gridY } = getHoveredGrid(event)
+  uniforms.value.u_hoveredColor.value.set(gridX, gridY)
+}
+
+const updateSelectedColor = (event: MouseEvent) => {
+  const { gridX, gridY } = getHoveredGrid(event)
+  if (gridX === -1 || gridY === -1) {
+    return
+  }
+
+  if (!groupedColors.value) {
+    return
+  }
+  const contrasts = Object.keys(groupedColors.value).sort((a, b) => Number(b) - Number(a))
+  const contrast = contrasts[gridY]
+  const color = groupedColors.value[contrast][gridX]
+
+  uniforms.value.u_selectedColor.value.set(gridX, gridY)
+  selectedColor.value = color
 }
 
 const setupScene = () => {
@@ -128,12 +140,14 @@ const setupScene = () => {
 }
 
 onMounted(() => {
-  setupScene();
-  (document.querySelector(".ctr-canvas") as HTMLCanvasElement)?.addEventListener("mousemove", updateHoveredColor)
+  setupScene()
+  ;(document.querySelector(".ctr-canvas") as HTMLCanvasElement)?.addEventListener("mousemove", updateHoveredColor)
+  ;(document.querySelector(".ctr-canvas") as HTMLCanvasElement)?.addEventListener("click", updateSelectedColor)
 })
 
 onUnmounted(() => {
   (document.querySelector(".ctr-canvas") as HTMLCanvasElement)?.removeEventListener("mousemove", updateHoveredColor)
+  ;(document.querySelector(".ctr-canvas") as HTMLCanvasElement)?.removeEventListener("click", updateSelectedColor)
 })
 </script>
 

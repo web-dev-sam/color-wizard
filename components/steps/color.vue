@@ -148,7 +148,7 @@ function resetColor() {
               <Icon name="ph:info" size="18"></Icon>
             </UiButton>
           </div>
-          <CommonRuler :min="minContrast" :max="maxContrast" class="pb-4" />
+          <CommonRuler :min="minContrast" :max="maxContrast" class="pb-6" />
           <div class="w-[50vw] sm:w-[70vw] md:w-[60vw] overflow-x-auto pb-4">
             <div class="!w-[2000px]" :style="{ height: `${31 * 14 / getDevicePixelRatio()}px` }">
               <TresCanvas
