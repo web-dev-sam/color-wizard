@@ -28,7 +28,7 @@ function resetColor() {
       Choose your base color.
     </h1>
     <p class="text-lg text-gray-600 dark:text-gray-400 mb-24 leading-relaxed max-w-[60ch] mx-auto">
-      This is the base of your palette. For light themes, it will be color 600. For dark themes, you can use this as color 600 to get more light shades.
+      This is the base for your shades which should have good contrast around WCAG 4.5:1. In the next step (WIP) you can choose which shade you want it to be (example: 600 for lightmode).
     </p>
 
     <div class="flex justify-center items-center gap-2">
