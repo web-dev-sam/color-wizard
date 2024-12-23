@@ -48,15 +48,15 @@ function resetColor() {
     <div class="mt-4 flex justify-evenly">
       <div v-if="!inputColorValid" class="text-gray-600 dark:text-gray-400 w-[50ch] leading-8">
         <div class="mb-2">Examples</div>
-        <code>#b000ba</code>,
-        <code>#bbc</code>,
-        <code>firebrick</code>,
-        <code>hsl(0, 100%, 50%)</code>,
-        <code>rgb(255 0 0)</code>,
-        <code>rgba(255, 0, 0, 0.5)</code>,
-        <code>hwb(0 0 0)</code>,
-        <code>lab(30% 40 20)</code>,
-        <code>lch(50% 10 250)</code>
+        <code class="hover:bg-neutral-800 cursor-pointer" role="button" @click="inputColor = '#123456'">#123456</code>,
+        <code class="hover:bg-neutral-800 cursor-pointer" role="button" @click="inputColor = '#abc'">#abc</code>,
+        <code class="hover:bg-neutral-800 cursor-pointer" role="button" @click="inputColor = 'firebrick'">firebrick</code>,
+        <code class="hover:bg-neutral-800 cursor-pointer" role="button" @click="inputColor = 'hsl(0, 100%, 50%)'">hsl(0, 100%, 50%)</code>,
+        <code class="hover:bg-neutral-800 cursor-pointer" role="button" @click="inputColor = 'rgb(255 0 0)'">rgb(255 0 0)</code>,
+        <code class="hover:bg-neutral-800 cursor-pointer" role="button" @click="inputColor = 'rgba(255, 0, 0, 0.5)'">rgba(255, 0, 0, 0.5)</code>,
+        <code class="hover:bg-neutral-800 cursor-pointer" role="button" @click="inputColor = 'hwb(0 0 0)'">hwb(0 0 0)</code>,
+        <code class="hover:bg-neutral-800 cursor-pointer" role="button" @click="inputColor = 'lab(30% 40 20)'">lab(30% 40 20)</code>,
+        <code class="hover:bg-neutral-800 cursor-pointer" role="button" @click="inputColor = 'lch(50% 10 250)'">lch(50% 10 250)</code>
       </div>
       <div v-else>
         <p class="mt-12 text-gray-600 dark:text-gray-400 mb-2">
