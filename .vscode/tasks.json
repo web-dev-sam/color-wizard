@@ -3,7 +3,7 @@
   "tasks": [
     {
       "label": "Clean",
-      "command": "pnpm run clean",
+      "command": "bun run clean",
       "type": "shell",
       "icon": {
         "id": "trash"
@@ -17,7 +17,7 @@
     },
     {
       "label": "Clean",
-      "command": "pnpm run prepare",
+      "command": "bun run prepare",
       "type": "shell",
       "icon": {
         "id": "sync"
@@ -31,7 +31,7 @@
     },
     {
       "label": "Install",
-      "command": "pnpm install",
+      "command": "bun install",
       "type": "shell",
       "icon": {
         "id": "repo-create"
@@ -45,7 +45,7 @@
     },
     {
       "label": "Install",
-      "command": "pnpm build",
+      "command": "bun build",
       "type": "shell",
       "icon": {
         "id": "package"
@@ -59,7 +59,7 @@
     },
     {
       "label": "Install",
-      "command": "pnpm dev",
+      "command": "bun dev",
       "type": "shell",
       "icon": {
         "id": "play"

@@ -2,36 +2,28 @@ FROM node:lts-alpine AS builder
 
 WORKDIR /app
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
-# Copy pnpm files
-COPY package.json pnpm-lock.yaml ./
+# Copy package files
+COPY package.json ./
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN npm install
 
 # Copy source
 COPY . .
 
-# Build Nuxt
-RUN pnpm run build
+# Build
+RUN npm run build
 
 # Production image
 FROM node:lts-alpine
 
 WORKDIR /app
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install serve
+RUN npm install -g serve
 
 # Copy built files
-COPY --from=builder /app/.output /app/.output
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/pnpm-lock.yaml ./
-
-# Install only production dependencies, ignore scripts
-RUN pnpm install --prod --frozen-lockfile --ignore-scripts
+COPY --from=builder /app/dist /app/dist
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
@@ -39,4 +31,4 @@ ENV PORT=3000
 
 EXPOSE 3000
 
-CMD ["node", ".output/server/index.mjs"]
+CMD ["serve", "-s", "dist", "-l", "3000"]
