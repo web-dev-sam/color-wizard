@@ -9,6 +9,10 @@ _Generate and manipulate colors easily like its magic. 🪄_
 
 &nbsp;
 
+## Why does this exist?
+1. I wanted to learn about OKLab color manipulation.
+2. WCAG contrast fixes should end up as close to the intended color as possible, as the human eye sees it.
+
 ## What it is
 
 A Vue 3 app, live at [colors.webry.com](https://colors.webry.com), that helps you fix WCAG contrast issues of your color by suggesting accessible alternatives. Just enter any color.

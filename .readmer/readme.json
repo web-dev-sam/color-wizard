@@ -27,5 +27,9 @@
         "```"
       ]
     }
+  ],
+  "why": [
+    "I wanted to learn about OKLab color manipulation.",
+    "WCAG contrast fixes should end up as close to the intended color as possible, as the human eye sees it."
   ]
 }
