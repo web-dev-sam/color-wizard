@@ -1,0 +1,31 @@
+{
+  "title": "Color Wizard",
+  "tagline": "Generate and manipulate colors easily like its magic. 🪄",
+  "sections": [
+    {
+      "title": "What it is",
+      "body": [
+        "A Vue 3 app, live at [colors.webry.com](https://colors.webry.com), that helps you fix WCAG contrast issues of your color by suggesting accessible alternatives. Just enter any color."
+      ]
+    },
+    {
+      "title": "How to run it",
+      "body": [
+        "```sh",
+        "npm install",
+        "npm run dev       # dev server",
+        "npm run build     # production build",
+        "npm run preview   # serve the built app",
+        "npm test          # vitest",
+        "npm run check     # lint + vue-tsc",
+        "```",
+        "",
+        "Or with Docker (builds the app and serves `dist` on port 3000):",
+        "",
+        "```sh",
+        "docker compose up",
+        "```"
+      ]
+    }
+  ]
+}
